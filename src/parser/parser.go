@@ -14,15 +14,17 @@ type parser struct {
 
 func createParser(tokens []lexer.Token) *parser {
 	createTokenLookups()
+	createTokenTypeLookups()
+
 	return &parser{
-		tokens: tokens,
+		tokens: tokens, pos: 0,
 	}
 }
 
 func Parse(tokens []lexer.Token) ast.BlockStmt {
 	Body := make([]ast.Stmt, 0)
-
 	p := createParser(tokens)
+
 	for p.hasTokens() {
 		Body = append(Body, parse_stmt(p))
 	}
@@ -32,19 +34,22 @@ func Parse(tokens []lexer.Token) ast.BlockStmt {
 	}
 }
 
-// helpers
+// --------------
+// HELPER METHODS
+// --------------
+
 func (p *parser) currentToken() lexer.Token {
 	return p.tokens[p.pos]
+}
+
+func (p *parser) currentTokenKind() lexer.TokenKind {
+	return p.currentToken().Kind
 }
 
 func (p *parser) advance() lexer.Token {
 	tk := p.currentToken()
 	p.pos++
 	return tk
-}
-
-func (p *parser) currentTokenKind() lexer.TokenKind {
-	return p.currentToken().Kind
 }
 
 func (p *parser) hasTokens() bool {

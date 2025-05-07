@@ -8,9 +8,7 @@ import (
 	"github.com/divakaivan/lang-parser-go/src/lexer"
 )
 
-// 10 + 6 * 2
 func parse_expr(p *parser, bp binding_power) ast.Expr {
-	// First parse the NUD
 	tokenKind := p.currentTokenKind()
 	nud_fn, exists := nud_lu[tokenKind]
 
@@ -18,8 +16,6 @@ func parse_expr(p *parser, bp binding_power) ast.Expr {
 		panic(fmt.Sprintf("NUD HANDLER EXPECTED FOR TOKEN %s\n", lexer.TokenKindString(tokenKind)))
 	}
 
-	// while we have a LED and the current bp is < bp of cur token
-	// continue parsing left hand side
 	left := nud_fn(p)
 	for bp_lu[p.currentTokenKind()] > bp {
 		tokenKind = p.currentTokenKind()
@@ -29,7 +25,7 @@ func parse_expr(p *parser, bp binding_power) ast.Expr {
 			panic(fmt.Sprintf("LED HANDLER EXPECTED FOR TOKEN %s\n", lexer.TokenKindString(tokenKind)))
 		}
 
-		left = led_fn(p, left, bp)
+		left = led_fn(p, left, bp_lu[p.currentTokenKind()])
 
 	}
 
@@ -64,5 +60,33 @@ func parse_binary_expr(p *parser, left ast.Expr, bp binding_power) ast.Expr {
 		Left:     left,
 		Operator: operatorToken,
 		Right:    right,
+	}
+}
+
+func parse_prefix_expr(p *parser) ast.Expr {
+	operatorToken := p.advance()
+	rhs := parse_expr(p, defalt_bp)
+
+	return ast.PrefixExpr{
+		Operator:  operatorToken,
+		RightExpr: rhs,
+	}
+}
+
+func parse_grouping_expr(p *parser) ast.Expr {
+	p.advance() // advance past grouping start
+	expr := parse_expr(p, defalt_bp)
+	p.expect(lexer.CLOSE_PAREN) // advance past close
+	return expr
+}
+
+func parse_assignment_expr(p *parser, left ast.Expr, bp binding_power) ast.Expr {
+	operatorToken := p.advance()
+	rhs := parse_expr(p, bp)
+
+	return ast.AssignmentExpr{
+		Operator: operatorToken,
+		Value:    rhs,
+		Assignee: left,
 	}
 }

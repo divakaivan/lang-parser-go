@@ -2,7 +2,10 @@ package ast
 
 import "github.com/divakaivan/lang-parser-go/src/lexer"
 
-// literal expressions
+// -------------------
+// LITERAL EXPRESSIONS
+// -------------------
+
 type NumberExpr struct {
 	Value float64
 }
@@ -21,7 +24,10 @@ type SymbolExpr struct {
 
 func (n SymbolExpr) expr() {}
 
-// complex expressions
+// -------------------
+// COMPLEX EXPRESSIONS
+// -------------------
+
 type BinaryExpr struct {
 	Left     Expr
 	Operator lexer.Token
@@ -29,3 +35,18 @@ type BinaryExpr struct {
 }
 
 func (n BinaryExpr) expr() {}
+
+type PrefixExpr struct {
+	Operator  lexer.Token
+	RightExpr Expr
+}
+
+func (n PrefixExpr) expr() {}
+
+type AssignmentExpr struct {
+	Assignee Expr
+	Operator lexer.Token
+	Value    Expr
+}
+
+func (n AssignmentExpr) expr() {}
